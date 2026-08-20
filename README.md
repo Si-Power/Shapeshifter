@@ -1,3 +1,26 @@
+SHAPESHIFTER
+
+This is a TWHL Half-Life 1 SDK v2.3 engine modification (incomplete yet), that allows player to turn on controllable/drivable monster via console command.
+Mod heavily inspired by another mod: Rocket Crowbar v1.9 (by Laser, (c) Derek Hageman 1999-2001), that had very interesting feature to transform players into ingame NPCs with various abilities.
+This mod is a reverse engineering attempt to resurrect transform feature for competitive or cooperative gameplay.
+
+Only monster_human_assassin is implemented.
+
+New console commands are available:
+
+	play_hassassin <player_index> - transform player with certain index into monster_human_assassin
+		For example: play_hassassin 1 - transform player 1 into monster_human_assassin 
+		(Player's ID in singleplayer mode always equals 1)
+
+	play_release <player_index> - release player with certain index from transform mode
+		For example: play_release 1 - release player 1 from transform mode
+		(Player's ID in singleplayer mode always equals 1)
+
+
+	debug_traceline 1/0 - toggle on/off rays visualization (only in NPC mode)
+
+
+
 Half Life 1 SDK LICENSE
 ======================
 
