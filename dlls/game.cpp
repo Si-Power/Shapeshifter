@@ -17,6 +17,238 @@
 #include "util.h"
 #include "game.h"
 
+
+#include "cbase.h"     // основной файл для CBaseEntity
+#include "player.h"
+#include "monsters.h"
+
+
+
+
+
+
+extern CBaseEntity* g_pAssassin;
+extern bool g_bIsActive;
+extern void StartHassassinCamera(CBasePlayer* pPlayer, CBaseEntity* pAssassin);
+extern void StopHassassinCamera(CBasePlayer* pPlayer);
+extern void UpdateCameraPosition(CBasePlayer* pPlayer); // Добавляем если нужно
+
+
+
+cvar_t debug_traceline = { "debug_traceline", "0" };
+
+class CHAssassin;
+
+extern void Assassin_PlayerTriggeredJump(void);
+extern void Assassin_CheckUse(void);
+
+extern bool g_bAssassinUsePressed;
+extern bool g_bAssassinUseHandled;
+
+extern void ServerCommand_DebugBBox(void);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void CheckButtons_Cmd(void) {
+	ALERT(at_console, "=== CHECKING FOR BUTTONS ON MAP ===\n");
+
+	CBaseEntity* pEntity = NULL;
+	int buttonCount = 0;
+
+	while ((pEntity = UTIL_FindEntityByClassname(pEntity, "func_button")) != NULL)
+	{
+		buttonCount++;
+		ALERT(at_console, "Button %d: targetname '%s' at (%.1f, %.1f, %.1f)\n",
+			buttonCount,
+			STRING(pEntity->pev->targetname),
+			pEntity->pev->origin.x,
+			pEntity->pev->origin.y,
+			pEntity->pev->origin.z);
+	}
+
+	ALERT(at_console, "Total buttons found: %d\n", buttonCount);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void DebugTraceLine_Cmd(void) {
+	if (CMD_ARGC() < 2) {
+		ALERT(at_console, "Usage: debug_traceline <0|1>\n");
+		ALERT(at_console, "Current value: %s\n", debug_traceline.string);
+		ALERT(at_console, "Pointer: %p\n", debug_traceline.value);
+		return;
+	}
+
+	const char* pszValue = CMD_ARGV(1);
+	int newValue = atoi(pszValue);
+
+	if (newValue == 0 || newValue == 1) {
+		CVAR_SET_STRING("debug_traceline", pszValue);
+		ALERT(at_console, "Debug traceline set to: %s (value: %f)\n", pszValue, debug_traceline.value);
+	}
+	else {
+		ALERT(at_console, "Error: Value must be 0 or 1\n");
+	}
+}
+
+
+
+
+
+
+
+
+
+void TestAssassinUse_Cmd(void) {
+	ALERT(at_console, "TEST: Manual assassin use call\n");
+
+	if (g_bIsActive && g_pAssassin) {
+		ALERT(at_console, "Calling Assassin_CheckUse manually\n");
+		Assassin_CheckUse();
+	}
+	else {
+		ALERT(at_console, "ERROR: Assassin not active\n");
+	}
+}
+
+
+
+
+
+
+
+
+
+// Функции команд остаются без изменений
+void PlayHassassin_Cmd(void) {
+	ALERT(at_console, "PlayHassassin_Cmd called\n");
+
+	if (CMD_ARGC() < 2) {
+		ALERT(at_console, "Error: Not enough arguments. Usage: play_hassassin <player_index>\n");
+		return;
+	}
+
+	const char* pszPlayerId = CMD_ARGV(1);
+	int playerIndex = atoi(pszPlayerId);
+	ALERT(at_console, "Trying to get player with index: %d\n", playerIndex);
+
+	CBasePlayer* pPlayer = (CBasePlayer*)UTIL_PlayerByIndex(playerIndex);
+
+	if (!pPlayer) {
+		ALERT(at_console, "Error: Player not found\n");
+		return;
+	}
+
+	ALERT(at_console, "Player found: %s\n", STRING(pPlayer->pev->netname));
+
+	// Создаем ассасина перед игроком
+	Vector forward;
+	g_engfuncs.pfnAngleVectors(pPlayer->pev->v_angle, forward, NULL, NULL);
+	Vector spawnPos = pPlayer->pev->origin + forward * 100;
+
+	ALERT(at_console, "Creating assassin at: %.1f %.1f %.1f\n", spawnPos.x, spawnPos.y, spawnPos.z);
+
+	// Создаем ассасина через CREATE_NAMED_ENTITY
+	edict_t* pAssassinEdict = CREATE_NAMED_ENTITY(MAKE_STRING("monster_human_assassin"));
+	if (pAssassinEdict) {
+		CBaseEntity* pAssassin = (CBaseEntity*)GET_PRIVATE(pAssassinEdict);
+		if (pAssassin) {
+			ALERT(at_console, "Assassin entity created successfully\n");
+
+			pAssassin->pev->origin = spawnPos;
+			pAssassin->pev->angles = pPlayer->pev->angles;
+			pAssassin->pev->owner = pPlayer->edict();
+			pAssassin->Spawn();
+
+			ALERT(at_console, "Calling StartHassassinCamera\n");
+			StartHassassinCamera(pPlayer, pAssassin);
+			ALERT(at_console, "StartHassassinCamera completed\n");
+		}
+		else {
+			ALERT(at_console, "Error: Failed to get private data for assassin\n");
+		}
+	}
+	else {
+		ALERT(at_console, "Error: Failed to create assassin entity\n");
+	}
+}
+
+void PlayRelease_Cmd(void) {
+	ALERT(at_console, "PlayRelease_Cmd called\n");
+
+	if (CMD_ARGC() < 2) {
+		ALERT(at_console, "Error: Not enough arguments. Usage: play_release <player_index>\n");
+		return;
+	}
+
+	const char* pszPlayerId = CMD_ARGV(1);
+	int playerIndex = atoi(pszPlayerId);
+	ALERT(at_console, "Trying to get player with index: %d\n", playerIndex);
+
+	CBasePlayer* pPlayer = (CBasePlayer*)UTIL_PlayerByIndex(playerIndex);
+
+	if (!pPlayer) {
+		ALERT(at_console, "Error: Player not found\n");
+		return;
+	}
+
+	ALERT(at_console, "Player found: %s\n", STRING(pPlayer->pev->netname));
+	ALERT(at_console, "Calling StopHassassinCamera\n");
+
+	StopHassassinCamera(pPlayer);
+	ALERT(at_console, "StopHassassinCamera completed\n");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 cvar_t	displaysoundlist = {"displaysoundlist","0"};
 
 // multiplayer server rules
@@ -447,6 +679,26 @@ cvar_t	sk_player_leg2	= { "sk_player_leg2","1" };
 cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 // END Cvars for Skill Level settings
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Register your console variables here
 // This gets called one time when the game is initialied
@@ -883,5 +1135,73 @@ void GameDLLInit( void )
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
+
+
+
+
+	g_pAssassin = NULL;
+	g_bIsActive = false;
+
+
+
+
+
+
+	g_engfuncs.pfnAddServerCommand("play_hassassin", PlayHassassin_Cmd);
+	g_engfuncs.pfnAddServerCommand("play_release", PlayRelease_Cmd);
+
+	CVAR_REGISTER(&debug_traceline);
+	g_engfuncs.pfnAddServerCommand("debug_traceline", DebugTraceLine_Cmd);
+
+	g_engfuncs.pfnAddServerCommand("test_assassin_use", TestAssassinUse_Cmd);
+	g_engfuncs.pfnAddServerCommand("check_buttons", CheckButtons_Cmd);
+
+	g_engfuncs.pfnAddServerCommand("debug_bbox", &ServerCommand_DebugBBox);
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
