@@ -19,7 +19,7 @@ New console commands are available:
 	debug_traceline 1/0 - toggle on/off rays visualization (only in NPC mode)
 
 EDITING:
-Can be also edited with Visual Studio 2022. Open the project.sln for editing and building the code.
+Can be also edited with Visual Studio 2022. Open the projects.sln for editing and building the code.
 
 INSTALLATION:
 After building (or downloading) place the cl.dll and hl.dll files in the corresponding folders of the game.
