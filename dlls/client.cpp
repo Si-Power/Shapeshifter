@@ -50,6 +50,234 @@ extern int gmsgSayText;
 
 extern int g_teamplay;
 
+
+
+
+
+
+extern CBaseEntity* g_pAssassin;
+extern bool g_bIsActive;
+extern void UpdateCameraPosition(CBasePlayer* pPlayer);
+extern void Assassin_PlayerTriggeredJump(void);
+
+// Внешние объявления для системы заряда прыжка
+extern float g_flJumpChargeStartTime;
+extern float g_flJumpChargeAmount;
+extern bool g_bJumpCharging;
+extern float g_flMaxJumpChargeTime;
+extern float g_flMaxJumpForce;
+extern float g_flMinJumpForce;
+
+// Внешние объявления для функций анимаций
+extern void Assassin_PlayJumpSound(void);
+extern void Assassin_PlayLandSound(void);
+extern void Assassin_SetAnimation(const char* animationName);
+extern int Assassin_GetCurrentSequence(void);
+extern bool Assassin_IsOnGround(void);
+extern float Assassin_GetVelocityZ(void);
+
+
+extern int Assassin_GetSequence(void);
+extern void Assassin_SetSequence(int sequence);
+
+
+extern void Assassin_StopMove(void);
+
+// В секцию внешних объявлений добавляем:
+extern bool g_bMoveForward;
+extern float g_flMoveSpeed;
+
+
+extern bool Assassin_IsOnGround(void);
+extern float Assassin_GetVelocityZ(void);
+extern int Assassin_GetSequence(void);
+extern void Assassin_SetActivity(int activity);
+extern void Assassin_AirControl(void);
+extern void Assassin_RestoreCollisions(void);
+
+
+extern void Assassin_Move(void);
+extern bool g_bMoveBackward;
+extern bool g_bMoveLeft;
+extern bool g_bMoveRight;
+
+
+
+extern void Assassin_MoveWithJerk(void);
+extern Vector CalculateMoveDirection(void);
+extern float g_flNextMoveTime;
+extern float g_flMoveInterval;
+extern Vector g_vecLastMoveDirection;
+extern bool g_bShouldMove;
+
+extern bool g_bMovingSideways;
+extern float g_flOriginalYaw;
+
+extern cvar_t debug_traceline;
+
+
+
+extern void Assassin_PhysicsInteraction(void);
+extern void HandleEntityInteraction(CBaseEntity* pEntity, const char* direction);
+extern void Assassin_CheckObjectInteraction(void);
+
+
+
+extern BOOL Assassin_CheckLadder(void);
+extern void Assassin_LadderMovement(void);
+extern void Assassin_HandleLadderPhysics(void);
+extern void Assassin_CheckLadderExit(void);
+extern void Assassin_PlayLadderSounds(void);  // ★★★★ ДОБАВЬТЕ ЭТУ СТРОКУ ★★★★
+
+
+
+
+// Глобальные переменные для системы использования
+extern void Assassin_CheckUse(void);
+extern bool g_bAssassinUsePressed;
+extern float g_flLastAssassinUse;
+extern float g_flNextAssassinUse;
+extern bool Assassin_CanUse(void);
+
+
+
+extern bool g_bAssassinUseHandled;
+extern void Assassin_ResetUse(void);
+
+
+extern CBaseEntity* Assassin_FindUseEntity(void);
+
+
+
+class CHAssassin;
+extern CHAssassin* GetAssassinPointer(void);
+
+
+
+
+
+
+
+// ★★★★ EXTERN ОБЪЯВЛЕНИЯ ДЛЯ ASSASSIN ИНТЕРФЕЙСА ★★★★
+extern void Assassin_SetPlayerInput(BOOL forward, BOOL back, BOOL left, BOOL right, BOOL jump, BOOL attack, BOOL altAttack, float yaw, float pitch);
+
+extern Vector g_vecAssassinWishDir;
+extern BOOL g_bAssassinWishJump;
+extern BOOL g_bAssassinWishAttack;
+extern float g_flAssassinWishYaw;
+
+
+// ★★★★ EXTERN ДЛЯ ОТРИСОВКИ BBOX ★★★★
+extern bool g_bDrawAssassinBBox;
+extern void DebugDrawAssassinFullBBox(void);
+
+void ServerCommand_DebugBBox(void);
+
+extern bool g_bIsWalking;           // Флаг режима ходьбы
+
+extern float g_flAssassinWishPitch;
+
+extern BOOL g_bAssassinWishAltAttack;
+
+extern bool g_bLastInvPressed;
+extern bool g_bReloadPressed;
+extern void Assassin_ThrowGrenade(void);
+extern void Assassin_ActivateInvisibility(void);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ★★★★ ОБРАБОТЧИК КОМАНДЫ debug_bbox ★★★★
+void ServerCommand_DebugBBox(void)
+{
+	if (g_pAssassin && g_bIsActive)
+	{
+		g_bDrawAssassinBBox = !g_bDrawAssassinBBox;
+
+		ALERT(at_console, "=== ASSASSIN BBOX DEBUG: %s ===\n",
+			g_bDrawAssassinBBox ? "ENABLED" : "DISABLED");
+
+		// Принудительная отрисовка при включении
+		if (g_bDrawAssassinBBox)
+		{
+			extern void DebugDrawAssassinFullBBox(void);
+			DebugDrawAssassinFullBBox();
+			ALERT(at_console, "BBOX drawing started - will update constantly\n");
+		}
+		else
+		{
+			ALERT(at_console, "BBOX drawing stopped\n");
+		}
+	}
+	else
+	{
+		ALERT(at_console, "Assassin not active - cannot draw BBox\n");
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Вспомогательная функция для безопасного приведения типа
+CHAssassin* GetAssassinPointer(void)
+{
+	if (!g_pAssassin) return NULL;
+	if (!FStrEq(STRING(g_pAssassin->pev->classname), "monster_human_assassin"))
+		return NULL;
+
+	return (CHAssassin*)g_pAssassin;
+}
+
+
+
+
+
+
+
+
+
 void LinkUserMessages( void );
 
 /*
@@ -362,6 +590,29 @@ void Host_Say( edict_t *pEntity, int teamonly )
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 ===========
 ClientCommand
@@ -370,17 +621,74 @@ called each time a player uses a "cmd" command
 */
 extern float g_flWeaponCheat;
 
+
+
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand( edict_t *pEntity )
 {
 	const char *pcmd = CMD_ARGV(0);
 	const char *pstr;
 
+
+	CBasePlayer* pPlayer = (CBasePlayer*)GET_PRIVATE(pEntity); // ★★★★ ОБЪЯВЛЯЕМ pPlayer ★★★★
+
+
+
+
+	// ★★★★ ОТЛАДКА ВСЕХ КОМАНД ★★★★
+	ALERT(at_console, "ClientCommand: %s\n", pcmd);
+
+
+
+
+
 	// Is the client spawned yet?
-	if ( !pEntity->pvPrivateData )
+	if (!pEntity->pvPrivateData)
 		return;
 
+
+
 	entvars_t *pev = &pEntity->v;
+
+
+
+
+
+	// ★★★ БЛОКИРУЕМ ВСЕ КОМАНДЫ ВЫБОРА ОРУЖИЯ И ПЕРЕЗАРЯДКИ ★★★
+	if (g_bIsActive && g_pAssassin)
+	{
+		// Блокируем выбор оружия
+		if (FStrEq(pcmd, "use") ||                    // use weapon_name
+			FStrEq(pcmd, "impulse") ||                 // импульсы (колесо мыши)
+			(strstr(pcmd, "weapon_") == pcmd))         // weapon_*
+		{
+			ALERT(at_console, "Weapon selection blocked: %s\n", pcmd);
+			return;
+		}
+
+		// ★★★ LASTINV - БРОСОК ГРАНАТЫ ★★★
+		if (FStrEq(pcmd, "lastinv"))
+		{
+			ALERT(at_console, "lastinv - throwing grenade\n");
+			Assassin_ThrowGrenade();
+			return;
+		}
+
+		// ★★★ RELOAD - АКТИВАЦИЯ НЕВИДИМОСТИ ★★★
+		if (FStrEq(pcmd, "reload"))
+		{
+			ALERT(at_console, "reload - toggling invisibility\n");
+			Assassin_ActivateInvisibility();
+			return;
+		}
+	}
+
+
+
+
+
+
+
 
 	if ( FStrEq(pcmd, "say" ) )
 	{
@@ -402,7 +710,6 @@ void ClientCommand( edict_t *pEntity )
 			GetClassPtr((CBasePlayer *)pev)->GiveNamedItem( STRING(iszItem) );
 		}
 	}
-
 	else if ( FStrEq(pcmd, "drop" ) )
 	{
 		// player is dropping an item. 
@@ -438,6 +745,93 @@ void ClientCommand( edict_t *pEntity )
 		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		pPlayer->StartObserver( pev->origin, VARS(pentSpawnSpot)->angles);
 	}
+
+
+
+
+
+
+	// ★★★★ КОМАНДА ДЛЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ ПОСТОЯННОЙ ОТРИСОВКИ BBOX ★★★★
+	else if (FStrEq(pcmd, "bbox_full"))
+	{
+		if (g_pAssassin && g_bIsActive)
+		{
+			g_bDrawAssassinBBox = !g_bDrawAssassinBBox;
+			ALERT(at_console, "=== ASSASSIN BBOX CONSTANT DRAW: %s ===\n",
+				g_bDrawAssassinBBox ? "ON" : "OFF");
+
+			// ★★★★ ПРИНУДИТЕЛЬНАЯ ОТРИСОВКА СРАЗУ ПРИ ВКЛЮЧЕНИИ ★★★★
+			if (g_bDrawAssassinBBox)
+			{
+				extern void DebugDrawAssassinFullBBox(void);
+				DebugDrawAssassinFullBBox();
+			}
+
+			ClientPrint(&pEntity->v, HUD_PRINTCONSOLE,
+				UTIL_VarArgs("Constant BBox drawing: %s\n",
+					g_bDrawAssassinBBox ? "ON" : "OFF"));
+		}
+		else
+		{
+			ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, "Assassin not active\n");
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// ★★★★ ТОЛЬКО ПОСЛЕ обработки оружия проверяем команды для ассасина ★★★★
+	else if (g_bIsActive && g_pAssassin)
+	{
+		// ★★★★ ЗАМЕНИТЕ НА ПРОСТУЮ ПЕРЕДАЧУ ВВОДА ★★★★
+		if (FStrEq(pcmd, "+forward") || FStrEq(pcmd, "-forward") ||
+			FStrEq(pcmd, "+back") || FStrEq(pcmd, "-back") ||
+			FStrEq(pcmd, "+moveright") || FStrEq(pcmd, "-moveright") ||
+			FStrEq(pcmd, "+moveleft") || FStrEq(pcmd, "-moveleft") ||
+			FStrEq(pcmd, "+jump") || FStrEq(pcmd, "-jump") ||
+			FStrEq(pcmd, "+attack") || FStrEq(pcmd, "-attack") ||
+			FStrEq(pcmd, "+attack2") || FStrEq(pcmd, "-attack2"))
+		{
+			BOOL forward = (pPlayer->pev->button & IN_FORWARD) != 0;
+			BOOL back = (pPlayer->pev->button & IN_BACK) != 0;
+			BOOL left = (pPlayer->pev->button & IN_MOVELEFT) != 0;
+			BOOL right = (pPlayer->pev->button & IN_MOVERIGHT) != 0;
+			BOOL jump = (pPlayer->pev->button & IN_JUMP) != 0;
+			BOOL attack = (pPlayer->pev->button & IN_ATTACK) != 0; 
+			BOOL altAttack = (pPlayer->pev->button & IN_ATTACK2) != 0;
+			float yaw = pPlayer->pev->v_angle.y;
+			float pitch = pPlayer->pev->v_angle.x;
+
+			Assassin_SetPlayerInput(forward, back, left, right, jump, attack, altAttack, yaw, pitch);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	else if ( g_pGameRules->ClientCommand( GetClassPtr((CBasePlayer *)pev), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
@@ -575,6 +969,34 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 ================
 PlayerPreThink
@@ -582,13 +1004,213 @@ PlayerPreThink
 Called every frame before physics are run
 ================
 */
-void PlayerPreThink( edict_t *pEntity )
+void PlayerPreThink(edict_t* pEntity)
 {
-	entvars_t *pev = &pEntity->v;
-	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
+	entvars_t* pev = &pEntity->v;
+	CBasePlayer* pPlayer = (CBasePlayer*)GET_PRIVATE(pEntity);
+
+
+
+
+
+	int originalButtons = 0;
 
 	if (pPlayer)
-		pPlayer->PreThink( );
+	{
+		if (g_bIsActive && g_pAssassin)
+		{
+			// Сохраняем оригинальные кнопки ДО очистки
+			originalButtons = pPlayer->pev->button;
+
+			// Очищаем кнопки атаки и приседания
+			pPlayer->pev->button &= ~(IN_ATTACK | IN_ATTACK2 | IN_DUCK);
+			pPlayer->m_afButtonPressed &= ~(IN_ATTACK | IN_ATTACK2 | IN_DUCK);
+			pPlayer->m_afButtonReleased &= ~(IN_ATTACK | IN_ATTACK2 | IN_DUCK);
+		}
+
+		// Вызываем PreThink с очищенными кнопками
+		pPlayer->PreThink();
+
+		if (g_bIsActive && g_pAssassin)
+		{
+			// Блокируем атаку игрока
+			pPlayer->m_flNextAttack = 1e30;
+
+			// Очищаем кнопки, которые мог установить PreThink
+			pPlayer->pev->button &= ~(IN_ATTACK | IN_ATTACK2 | IN_DUCK);
+			pPlayer->m_afButtonPressed &= ~(IN_ATTACK | IN_ATTACK2 | IN_DUCK);
+			pPlayer->m_afButtonReleased &= ~(IN_ATTACK | IN_ATTACK2 | IN_DUCK);
+
+			// ★★★ ДОПОЛНИТЕЛЬНО БЛОКИРУЕМ ПЕРЕЗАРЯДКУ ИГРОКА ★★★
+			pPlayer->pev->button &= ~IN_RELOAD;
+			pPlayer->m_afButtonPressed &= ~IN_RELOAD;
+
+
+			// Принудительно отключаем приседание игрока
+			pPlayer->pev->bInDuck = 0;
+			pPlayer->pev->flDuckTime = 0;
+			pPlayer->pev->flags &= ~FL_DUCKING;
+			pPlayer->pev->view_ofs = VEC_VIEW;
+		}
+	}
+
+
+
+
+
+
+	// ОБРАБОТКА СИСТЕМЫ АССАСИНА - ПЕРЕМЕЩАЕМ ПОСЛЕ PreThink()
+	if (g_bIsActive && g_pAssassin && pPlayer)
+	{
+
+
+
+
+
+		// ★★★★ ОБНОВЛЯЕМ ВВОД ДЛЯ АССАСИНА ★★★★
+		BOOL forward = (originalButtons & IN_FORWARD) != 0;
+		BOOL back = (originalButtons & IN_BACK) != 0;
+		BOOL left = (originalButtons & IN_MOVELEFT) != 0;
+		BOOL right = (originalButtons & IN_MOVERIGHT) != 0;
+		BOOL jump = (originalButtons & IN_JUMP) != 0;
+		BOOL attack = (originalButtons & IN_ATTACK) != 0;
+		BOOL altAttack = (originalButtons & IN_ATTACK2) != 0;
+		// ★★★★ НОВОЕ: ПОЛУЧАЕМ СОСТОЯНИЕ КЛАВИШИ CTRL (IN_SPEED) ★★★★
+		BOOL walk = (originalButtons & IN_DUCK) != 0;
+		BOOL reload = (originalButtons & IN_RELOAD) != 0;
+
+
+
+		float yaw = pPlayer->pev->v_angle.y;
+		float pitch = pPlayer->pev->v_angle.x;
+
+
+
+		// ★★★ ОБРАБОТКА ПЕРЕЗАРЯДКИ (НЕВИДИМОСТЬ) ★★★
+// Вызываем ТОЛЬКО при нажатии (переход из 0 в 1)
+// Игнорируем, если кулдаун ещё активен
+		if (reload && !g_bReloadPressed)
+		{
+			ALERT(at_console, "Reload key PRESSED - toggling invisibility\n");
+			Assassin_ActivateInvisibility();
+			g_bReloadPressed = true;
+		}
+		// Сбрасываем флаг только когда кнопка отпущена
+		if (!reload)
+		{
+			g_bReloadPressed = false;
+		}
+
+
+
+
+
+
+		// Обработка заряда прыжка
+		extern float g_flJumpChargeStartTime;
+		extern float g_flJumpChargeAmount;
+		extern bool g_bJumpCharging;
+		extern float g_flMaxJumpChargeTime;
+		extern float g_flJumpCooldown;
+
+		if (g_pAssassin->pev->flags & FL_ONGROUND)
+		{
+			if (jump && !g_bJumpCharging)
+			{
+				// Начали зарядку
+				g_bJumpCharging = true;
+				g_flJumpChargeStartTime = gpGlobals->time;
+				g_flJumpChargeAmount = 0;
+			}
+			else if (jump && g_bJumpCharging)
+			{
+				// Продолжаем зарядку
+				float chargeTime = gpGlobals->time - g_flJumpChargeStartTime;
+				g_flJumpChargeAmount = chargeTime / g_flMaxJumpChargeTime;
+
+				if (g_flJumpChargeAmount > 1.0f)
+					g_flJumpChargeAmount = 1.0f;
+			}
+			else if (!jump && g_bJumpCharging)
+			{
+				// Отпустили — прыгаем!
+				Assassin_PlayerTriggeredJump();
+				// g_bJumpCharging и g_flJumpChargeAmount сбрасываются внутри
+			}
+		}
+		else
+		{
+			// В воздухе — сбрасываем заряд
+			g_bJumpCharging = false;
+			g_flJumpChargeAmount = 0;
+		}
+
+
+
+
+
+		// ★★★★ ОБНОВЛЯЕМ ГЛОБАЛЬНЫЙ ФЛАГ ХОДЬБЫ ★★★★
+		g_bIsWalking = (walk != 0);
+
+		// Отладка
+		static float lastDebugTime = 0;
+		if (gpGlobals->time - lastDebugTime > 1.0f)
+		{
+			ALERT(at_console, "Walk mode: %s\n", g_bIsWalking ? "ON" : "OFF");
+			lastDebugTime = gpGlobals->time;
+		}
+
+		Assassin_SetPlayerInput(forward, back, left, right, jump, attack, altAttack, yaw, pitch);
+
+
+	
+
+		// ★★★★ ЕСЛИ ИГРОК ПЫТАЕТСЯ ИСПОЛЬЗОВАТЬ - ПЕРЕНАПРАВЛЯЕМ К АССАСИНУ ★★★★
+		if (pPlayer->m_afButtonPressed & IN_USE)
+		{
+			ALERT(at_console, "=== PLAYER USE DETECTED - REDIRECTING TO ASSASSIN ===\n");
+			CBaseEntity* pUseEntity = Assassin_FindUseEntity();
+
+			if (pUseEntity)
+			{
+				const char* className = STRING(pUseEntity->pev->classname);
+				ALERT(at_console, ">>> ASSASSIN ACTIVATING: %s\n", className);
+
+				// ★★★★ ВРЕМЕННО ПРЕВРАЩАЕМ АССАСИНА В ИГРОКА ★★★★
+				int oldFlags = g_pAssassin->pev->flags;
+				const char* oldClassname = STRING(g_pAssassin->pev->classname);
+
+				g_pAssassin->pev->flags |= FL_CLIENT;
+				g_pAssassin->pev->classname = MAKE_STRING("player");
+
+				// ★★★★ АКТИВИРУЕМ ОБЪЕКТ ОТ ИМЕНИ АССАСИНА ★★★★
+				pUseEntity->Use(g_pAssassin, g_pAssassin, USE_TOGGLE, 0);
+
+				// Восстанавливаем свойства
+				g_pAssassin->pev->flags = oldFlags;
+				g_pAssassin->pev->classname = MAKE_STRING(oldClassname);
+
+				EMIT_SOUND(g_pAssassin->edict(), CHAN_ITEM, "common/wpn_select.wav", 1.0, ATTN_NORM);
+				ALERT(at_console, "*** ASSASSIN USE SUCCESS ***\n");
+			}
+			else
+			{
+				ALERT(at_console, "No object found for assassin\n");
+				EMIT_SOUND(g_pAssassin->edict(), CHAN_ITEM, "common/wpn_denyselect.wav", 1.0, ATTN_NORM);
+			}
+
+			// Сбрасываем флаг использования у игрока
+			pPlayer->m_afButtonPressed &= ~IN_USE;
+		}
+
+
+		// ★★★★ СИНХРОНИЗИРУЕМ ЗДОРОВЬЕ ДЛЯ HUD ★★★★
+		pPlayer->pev->health = g_pAssassin->pev->health;
+		pPlayer->pev->max_health = g_pAssassin->pev->max_health;
+
+		// ОБНОВЛЕНИЕ КАМЕРЫ
+		UpdateCameraPosition(pPlayer);
+	}
 }
 
 /*
@@ -753,6 +1375,37 @@ void ClientPrecache( void )
 
 	if (giPrecacheGrunt)
 		UTIL_PrecacheOther("monster_human_grunt");
+
+
+	// Добавляем прекеш для лазера
+	g_sModelIndexLaser = PRECACHE_MODEL("sprites/laserbeam.spr");
+
+
+
+
+
+
+
+
+
+
+	// ★★★★ ЗВУКИ КНОПОК ★★★★
+	PRECACHE_SOUND("buttons/button1.wav");
+
+
+
+	// ★★★★ ЗВУК "НЕВОЗМОЖНО ИСПОЛЬЗОВАТЬ" КАК У ИГРОКА ★★★★
+	PRECACHE_SOUND("common/wpn_denyselect.wav");
+
+
+
+
+
+
+
+
+
+
 }
 
 /*
