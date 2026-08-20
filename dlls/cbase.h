@@ -794,4 +794,8 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
+
+
+	void PrecacheAllMonsters();
+
 };
