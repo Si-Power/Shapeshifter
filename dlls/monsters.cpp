@@ -2173,7 +2173,7 @@ void CBaseMonster :: MovementComplete( void )
 		break;
 	
 	case TASKSTATUS_RUNNING_TASK:
-		ALERT( at_error, "Movement completed twice!\n" );
+		//ALERT( at_error, "Movement completed twice!\n" );
 		break;
 
 	case TASKSTATUS_COMPLETE:		
