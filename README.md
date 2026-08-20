@@ -4,7 +4,7 @@ This is a TWHL Half-Life 1 SDK v2.3 engine modification (incomplete yet), that a
 Mod heavily inspired by another mod: Rocket Crowbar v1.9 (by Laser, (c) Derek Hageman 1999-2001), that had very interesting feature to transform players into ingame NPCs with various abilities.
 This mod is a reverse engineering attempt to resurrect transform feature for competitive or cooperative gameplay.
 
-Only monster_human_assassin is implemented.
+At now only monster_human_assassin is implemented.
 
 New console commands are available:
 
@@ -15,9 +15,27 @@ New console commands are available:
 	play_release <player_index> - release player with certain index from transform mode
 		For example: play_release 1 - release player 1 from transform mode
 		(Player's ID in singleplayer mode always equals 1)
-
-
+	
 	debug_traceline 1/0 - toggle on/off rays visualization (only in NPC mode)
+
+EDITING:
+Can be also edited with Visual Studio 2022. Open the project.sln for editing and building the code.
+
+INSTALLATION:
+After building (or downloading) place the cl.dll and hl.dll files in the corresponding folders of the game.
+
+Problems to solve:
+1. Controllable NPC can't walk near walls, only stuck;
+2. Controllable NPC bumps on invisible ceiling while jumping;
+3. Controllable NPC can stuck before slopes, stairs and aligned planes, can't slide on them like player does;
+4. Controllable NPC can only imitate native walking and running, but not use own schedule movement;
+5. Need to increase memory limits of sounds and models since this mod must work on any map of Half-Life campaign with almost any monster in future;
+6. Save/load or changing level while NPC drive causes player-camera fly far out from the level.
+
+
+
+
+
 
 
 
