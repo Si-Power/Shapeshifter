@@ -469,12 +469,113 @@ LINK_ENTITY_TO_CLASS( worldspawn, CWorld );
 extern DLL_GLOBAL BOOL		g_fGameOver;
 float g_flWeaponCheat; 
 
+
+
+
+
+
+
+
+
+
+
+void CWorld::PrecacheAllMonsters()
+{
+	ALERT(at_console, "Precaching all monsters via entity Precache methods...\n");
+
+	// Массив всех класснеймов монстров
+	const char* monsterClassnames[] = {
+		"monster_barney",
+		"monster_scientist",
+		"monster_human_grunt",
+		"monster_human_assassin",
+		"monster_zombie",
+		"monster_headcrab",
+		"monster_alien_grunt",
+		"monster_alien_slave",
+		"monster_alien_controller",
+		"monster_bullchicken",
+		"monster_bigmomma",
+		"monster_gargantua",
+		"monster_houndeye",
+		"monster_barnacle",
+		"monster_ichthyosaur",
+		"monster_turret",
+		"monster_miniturret",
+		"monster_sentry",
+		"monster_apache",
+		"monster_osprey",
+		"monster_nihilanth",
+		"monster_tentacle",
+		NULL
+	};
+
+	int precachedCount = 0;
+
+	for (int i = 0; monsterClassnames[i] != NULL; i++)
+	{
+		// Приводим const char* к char*
+		CBaseEntity* pEntity = CBaseEntity::Create((char*)monsterClassnames[i], g_vecZero, g_vecZero, NULL);
+		if (pEntity)
+		{
+			UTIL_Remove(pEntity);
+			precachedCount++;
+			ALERT(at_console, "Precached: %s\n", monsterClassnames[i]);
+		}
+		else
+		{
+			ALERT(at_console, "Failed to precache: %s\n", monsterClassnames[i]);
+		}
+	}
+
+	ALERT(at_console, "Successfully precached %d monster types.\n", precachedCount);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void CWorld :: Spawn( void )
 {
 	g_fGameOver = FALSE;
 	Precache( );
 	g_flWeaponCheat = CVAR_GET_FLOAT( "sv_cheats" );  // Is the impulse 101 command allowed?
+
+
+	PrecacheAllMonsters();
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void CWorld :: Precache( void )
 {
